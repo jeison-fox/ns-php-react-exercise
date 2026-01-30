@@ -53,6 +53,7 @@ $app->get('/health', function (Request $request, Response $response) {
 
 // Transaction routes
 $app->get('/api/v1/transactions[/]', [TransactionController::class, 'index']);
+$app->get('/api/v1/transactions/grid', [TransactionController::class, 'grid']);
 $app->get('/api/v1/transactions/{id}', [TransactionController::class, 'show']);
 $app->post('/api/v1/transactions[/]', [TransactionController::class, 'create']);
 $app->put('/api/v1/transactions/{id}', [TransactionController::class, 'update']);
