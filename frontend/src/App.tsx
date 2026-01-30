@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import Header from './components/Header';
-import TransactionList from './components/TransactionList';
+import TransactionGrid from './components/TransactionGrid';
 
 function App() {
   const [userActivityCount, setUserActivityCount] = useState(0);
@@ -16,8 +16,8 @@ function App() {
       <Header onUserProfileClick={handleUserProfileClick} />
       <main className="flex-grow container mx-auto p-4">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">FinTech Dashboard</h1>
-        <p className="text-gray-600">User Activity: {userActivityCount}</p>
-        <TransactionList />
+        <p className="text-gray-600 mb-4">User Activity: {userActivityCount}</p>
+        <TransactionGrid />
       </main>
     </div>
   );

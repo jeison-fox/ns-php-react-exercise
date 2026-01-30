@@ -237,4 +237,137 @@ class ApiTest extends TestCase
         $this->assertTrue($response->hasHeader('Access-Control-Allow-Origin'));
         $this->assertEquals('*', $response->getHeader('Access-Control-Allow-Origin')[0]);
     }
+
+    public function testGridEndpoint(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->assertArrayHasKey('items', $data);
+        $this->assertArrayHasKey('total', $data);
+        $this->assertArrayHasKey('page', $data);
+        $this->assertArrayHasKey('size', $data);
+        $this->assertArrayHasKey('total_pages', $data);
+    }
+
+    public function testGridDefaultPagination(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->assertEquals(1, $data['page']);
+        $this->assertEquals(10, $data['size']);
+        $this->assertCount(10, $data['items']);
+        $this->assertEquals(25, $data['total']);
+        $this->assertEquals(3, $data['total_pages']);
+    }
+
+    public function testGridCustomPagination(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid?page=2&size=5');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->assertEquals(2, $data['page']);
+        $this->assertEquals(5, $data['size']);
+        $this->assertCount(5, $data['items']);
+        $this->assertEquals(5, $data['total_pages']);
+    }
+
+    public function testGridLastPage(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid?page=3&size=10');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->assertEquals(3, $data['page']);
+        $this->assertCount(5, $data['items']);
+    }
+
+    public function testGridSortByAmountAsc(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid?sort_by=amount&sort_order=asc&size=3');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $items = $data['items'];
+
+        $this->assertLessThanOrEqual($items[1]['amount'], $items[0]['amount']);
+        $this->assertLessThanOrEqual($items[2]['amount'], $items[1]['amount']);
+    }
+
+    public function testGridSortByAmountDesc(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid?sort_by=amount&sort_order=desc&size=3');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $items = $data['items'];
+
+        $this->assertGreaterThanOrEqual($items[1]['amount'], $items[0]['amount']);
+        $this->assertGreaterThanOrEqual($items[2]['amount'], $items[1]['amount']);
+    }
+
+    public function testGridItemHasTags(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $firstItem = $data['items'][0];
+
+        $this->assertArrayHasKey('tags', $firstItem);
+        $this->assertIsArray($firstItem['tags']);
+        $this->assertNotEmpty($firstItem['tags']);
+
+        $firstTag = $firstItem['tags'][0];
+        $this->assertArrayHasKey('id', $firstTag);
+        $this->assertArrayHasKey('name', $firstTag);
+    }
+
+    public function testGridItemHasCategoryRel(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $firstItem = $data['items'][0];
+
+        $this->assertArrayHasKey('category_rel', $firstItem);
+        $this->assertArrayHasKey('id', $firstItem['category_rel']);
+        $this->assertArrayHasKey('name', $firstItem['category_rel']);
+    }
+
+    public function testGridAmountIsFloat(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/grid');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $firstItem = $data['items'][0];
+
+        $this->assertIsFloat($firstItem['amount']);
+    }
+
+    public function testTransactionHasTags(): void
+    {
+        $response = $this->client->get('/api/v1/transactions/1');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->assertArrayHasKey('tags', $data);
+        $this->assertIsArray($data['tags']);
+    }
 }
