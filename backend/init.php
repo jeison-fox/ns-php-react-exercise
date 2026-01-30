@@ -7,6 +7,7 @@ require __DIR__ . '/config/doctrine.php';
 
 use App\Models\Transaction;
 use App\Models\Category;
+use App\Models\Tag;
 
 echo "Creating database tables..." . PHP_EOL;
 
@@ -15,6 +16,7 @@ $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($em);
 
 $classes = [
     $em->getClassMetadata(Category::class),
+    $em->getClassMetadata(Tag::class),
     $em->getClassMetadata(Transaction::class),
 ];
 

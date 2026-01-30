@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use DateTime;
 
 #[ORM\Entity]
@@ -44,11 +46,16 @@ class Transaction
     #[ORM\Column(type: 'datetime')]
     private DateTime $updated_at;
 
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'transactions')]
+    #[ORM\JoinTable(name: 'transaction_tags')]
+    private Collection $tags;
+
     public function __construct()
     {
         $this->date = new DateTime();
         $this->created_at = new DateTime();
         $this->updated_at = new DateTime();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -151,6 +158,28 @@ class Transaction
         return $this->updated_at;
     }
 
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+            $this->updated_at = new DateTime();
+        }
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): self
+    {
+        if ($this->tags->removeElement($tag)) {
+            $this->updated_at = new DateTime();
+        }
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -162,6 +191,7 @@ class Transaction
             'user_id' => $this->user_id,
             'date' => $this->date->format('Y-m-d\TH:i:s\Z'),
             'category_rel' => $this->category->toArray(),
+            'tags' => array_map(fn(Tag $tag) => $tag->toArray(), $this->tags->toArray()),
         ];
     }
 }
