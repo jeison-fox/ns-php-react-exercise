@@ -62,7 +62,7 @@ class TransactionController
         $sortColumnMap = [
             'id' => 't.id',
             'description' => 't.description',
-            'amount' => 't.amount',
+            'amount' => "CASE WHEN t.type = 'credit' THEN t.amount ELSE -t.amount END",
             'type' => 't.type',
             'date' => 't.date',
             'category_name' => 'c.name',
