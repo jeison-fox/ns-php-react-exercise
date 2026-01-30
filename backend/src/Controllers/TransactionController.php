@@ -26,6 +26,8 @@ class TransactionController
         $transactionRepo = $this->em->getRepository(Transaction::class);
 
         $transactions = $transactionRepo->createQueryBuilder('t')
+            ->leftJoin('t.category', 'c')
+            ->addSelect('c')
             ->setFirstResult($skip)
             ->setMaxResults($limit)
             ->getQuery()
